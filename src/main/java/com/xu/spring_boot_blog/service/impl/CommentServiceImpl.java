@@ -2,13 +2,18 @@ package com.xu.spring_boot_blog.service.impl;
 
 import com.xu.spring_boot_blog.entity.Comment;
 import com.xu.spring_boot_blog.entity.Post;
+import com.xu.spring_boot_blog.exception.BlogAPIException;
 import com.xu.spring_boot_blog.exception.ResourceNotFoundException;
 import com.xu.spring_boot_blog.payload.CommentDto;
 import com.xu.spring_boot_blog.payload.PostDto;
 import com.xu.spring_boot_blog.repository.CommentRepository;
 import com.xu.spring_boot_blog.repository.PostRepository;
 import com.xu.spring_boot_blog.service.CommentService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CommentServiceImpl implements CommentService {
@@ -39,6 +44,66 @@ public class CommentServiceImpl implements CommentService {
         return mapToDTO(newComment);
     }
 
+    @Override
+    public List<CommentDto> getCommentsByPostId(long postId) {
+
+        List<Comment> comments = commentRepository.findByPostId(postId);
+
+        return comments.stream().map(this::mapToDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public CommentDto getCommentById(long postId, long commentId) {
+
+        Post post = postRepository.findById(postId).orElseThrow(
+                ()-> new ResourceNotFoundException("Post","id",postId));
+
+        Comment comment = commentRepository.findById(commentId).orElseThrow(
+                ()-> new ResourceNotFoundException("Comment","id",commentId));
+
+        if(!comment.getPost().getId().equals(post.getId())){
+            throw new BlogAPIException(HttpStatus.BAD_REQUEST,"留言不存在");
+        }
+
+        return mapToDTO(comment);
+    }
+
+    @Override
+    public CommentDto updateComment(long postId, long commentId, CommentDto commentRequest) {
+
+        Post post = postRepository.findById(postId).orElseThrow(
+                ()-> new ResourceNotFoundException("Post","id",postId));
+
+        Comment comment = commentRepository.findById(commentId).orElseThrow(
+                ()-> new ResourceNotFoundException("Comment","id",commentId));
+
+        if(!comment.getPost().getId().equals(post.getId())){
+            throw new BlogAPIException(HttpStatus.BAD_REQUEST,"文章不存在留言");
+        }
+
+        comment.setName(commentRequest.getName());
+        comment.setEmail(commentRequest.getEmail());
+        comment.setBody(commentRequest.getBody());
+
+        Comment updateComment = commentRepository.save(comment);
+
+        return mapToDTO(updateComment);
+    }
+
+    @Override
+    public void deleteComment(long postId, long commentId) {
+        Post post = postRepository.findById(postId).orElseThrow(
+                ()-> new ResourceNotFoundException("Post","id",postId));
+
+        Comment comment = commentRepository.findById(commentId).orElseThrow(
+                ()-> new ResourceNotFoundException("Comment","id",commentId));
+
+        if(!comment.getPost().getId().equals(post.getId())){
+            throw new BlogAPIException(HttpStatus.BAD_REQUEST,"文章不存在留言");
+        }
+
+        commentRepository.delete(comment);
+    }
 
 
     //    convert Entity into DTO
