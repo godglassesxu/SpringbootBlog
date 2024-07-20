@@ -44,7 +44,9 @@ public class SecurityConfig {
                         //驗證所有API
                         //authorize.anyRequest().authenticated()
                         //驗證指定API
-                        authorize.requestMatchers(HttpMethod.GET,"/api/**").permitAll().anyRequest().authenticated()
+                        authorize.requestMatchers(HttpMethod.GET,"/api/**").permitAll()
+                                .requestMatchers("/api/auth/**").permitAll()
+                                .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults());
         return http.build();
