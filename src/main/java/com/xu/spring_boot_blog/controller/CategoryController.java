@@ -4,6 +4,8 @@ package com.xu.spring_boot_blog.controller;
 import com.xu.spring_boot_blog.entity.Category;
 import com.xu.spring_boot_blog.payload.CategoryDto;
 import com.xu.spring_boot_blog.service.CategoryService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/categories")
+@Tag(name = "Category CRUD APIs")
 public class CategoryController {
 
     private CategoryService categoryService;
@@ -22,6 +25,7 @@ public class CategoryController {
     }
 
     //add category rest api
+    @SecurityRequirement(name="Bear Auth")
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CategoryDto> crateCategory(@RequestBody CategoryDto categoryDto) {
@@ -42,6 +46,7 @@ public class CategoryController {
     }
 
     //update category rest api
+    @SecurityRequirement(name="Bear Auth")
     @PutMapping("{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CategoryDto> updateCategory(@RequestBody CategoryDto categoryDto,
@@ -50,6 +55,7 @@ public class CategoryController {
     }
 
     //delete category rest api
+    @SecurityRequirement(name="Bear Auth")
     @DeleteMapping("{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteCategory(@PathVariable("id") Long categoryId) {
